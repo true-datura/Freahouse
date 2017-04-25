@@ -9,9 +9,7 @@ urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     url(settings.ADMIN_URL, admin.site.urls),
 
-    # User management
     # url(r'^users/', include('freakhouse.users.urls', namespace='users')),
-    # Your stuff: custom urls includes go here
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
