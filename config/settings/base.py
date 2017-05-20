@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = [
 # Apps specific for this project go here.
 LOCAL_APPS = [
     # custom users app
+    'freakhouse.board.apps.BoardConfig',
     'freakhouse.users.apps.UsersConfig',
     # Your stuff: custom apps go here
 ]
@@ -226,3 +227,5 @@ else:
 
 # Location of root django.contrib.admin URL, use {% url 'admin:index' %}
 ADMIN_URL = r'^admin/'
+
+SITE_ID = 1

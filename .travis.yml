@@ -1,6 +1,7 @@
 language: python
 python:
   - "3.5"
-install: "pip install -r requirements/test.txt"
+install: "pip install -r requirements/test.txt && pip install coveralls"
 # command to run tests
-script: pytest
+script: pytest --cov=./ --cov-report=term-missing -vv
+after_success: coveralls
