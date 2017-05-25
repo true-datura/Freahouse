@@ -5,8 +5,9 @@
   <title>Cyberia Club</title>
 </head>
 <body>
+Sections:
 {% for object in object_list %}
-  {{ object }}
+  <a href="{{ object.get_absolute_url }}">{{ object }}</a>
 {% endfor %}
 </body>
 </html>

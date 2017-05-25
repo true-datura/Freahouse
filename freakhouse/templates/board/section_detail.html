@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ object.slug }} - {{ object.name }}</title>
+</head>
+<body>
+<ul>
+  <li>
+  {% for thread in object.threads.all %}
+    <ul>
+    {% for post in thread.last_posts %}
+      <li>{{ post }}</li>
+    {% endfor %}
+    </ul>
+    {{ thread.thread_info }}
+  {% endfor %}
+  </li>
+</ul>
+</body>
+</html>

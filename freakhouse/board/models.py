@@ -3,6 +3,7 @@ from random import randint
 from time import time
 
 from django.db import models
+from django.core.urlresolvers import reverse
 
 
 def files_resolver(instance, filename):
@@ -24,6 +25,9 @@ class FileType(models.Model):
     extension = models.CharField("Extension", max_length=10)
     mime = models.CharField("MIME", max_length=250)
 
+    def __str__(self):
+        return self.extension
+
 
 class File(models.Model):
     """Represents files at the board."""
@@ -39,6 +43,9 @@ class File(models.Model):
     @property
     def post(self):
         return self.post_set.get()
+
+    def __str__(self):
+        return self.hash
 
 
 class Section(models.Model):
@@ -88,24 +95,25 @@ class Section(models.Model):
         """List of allowed MIME types of section."""
         return self.file_types.values_list("mime", "extension")
 
+    def __str__(self):
+        return self.slug
+
+    def get_absolute_url(self):
+        return reverse('section_detail', kwargs={'slug': self.slug})
+
 
 class Thread(models.Model):
     """Groups of posts."""
     bump = models.DateTimeField("Bump", blank=True, db_index=True)
-    section = models.ForeignKey(Section)
+    section = models.ForeignKey(Section, related_name='threads')
 
     class Meta:
         get_latest_by = "bump"
         ordering = ["-bump"]
 
-    def posts(self):
-        """Returns thread posts."""
-        return self.post_set.all()
-
     def thread_info(self, limit=5):
         """Returns dict, that contains info about thread files and posts."""
-        posts = self.posts()
-        total = posts.count()
+        total = self.posts.count()
         if total <= limit:
             return {"total": total, "skipped": 0, "skipped_files": 0}
         start = total - limit
@@ -118,23 +126,25 @@ class Thread(models.Model):
 
     @property
     def op_post(self):
-        post_set = self.post_set
-        return post_set.filter(op_post=True).get()
+        return self.posts.first()
 
     def last_posts(self):
         thread_info = self.thread_info()
-        posts = self.posts()
+        posts = self.posts.all()
         if not thread_info["skipped"]:
             return posts
         # select first and last 5 posts
         start, stop = thread_info["start"], thread_info["stop"]
         return [posts[0]] + list(posts[start:stop])
 
+    def get_absolute_url(self):
+        return reverse('thread_detail', kwargs={'slug': self.slug})
+
 
 class Post(models.Model):
     """Represents post."""
     pid = models.PositiveIntegerField("PID", blank=True, db_index=True)
-    thread = models.ForeignKey(Thread, blank=True, null=True)
+    thread = models.ForeignKey(Thread, blank=True, null=True, related_name='posts')
     op_post = models.BooleanField("First post in thread", default=False)
     date = models.DateTimeField("Bump", default=datetime.now, blank=True)
     poster = models.CharField("Name", max_length=32, blank=True, null=True)
@@ -155,3 +165,8 @@ class Post(models.Model):
 
     def section_slug(self):
         return self.thread.section.slug
+
+    def __str__(self):
+        if self.op_post:
+            return 'Thread № {}'.format(self.pid)
+        return 'Post № {}'.format(self.pid)
